@@ -1,0 +1,76 @@
+<?php
+function product_comparison_schema(){
+  $schema['product_comparison'] = array(
+    'description' => 'Product Comparison Table',
+    'fields' => array(
+        'id'             => array( //Primary key
+        'description'       => 'Primary Key: Product Id',
+        'type'              => 'int',
+        'size'              => 'small',
+        'not null'          => FALSE,
+        ),
+      'DropdownCategory'           => array(
+        'description'       => 'Products',
+        'type'              => 'text',
+        'size'              => 'big',
+        'not null'          => FALSE,
+      ),
+     'MFG'              => array(
+        'description'       => 'Manufacturer',
+        'type'              => 'text',
+        'size'              => 'big',
+        'not null'          => FALSE,
+      ),
+       'Series'           => array(
+        'description'       => 'Series / Model',
+        'type'              => 'text',
+        'size'              => 'big',
+        'not null'          => FALSE,
+      ),
+      'OtherCombo'          => array(
+        'description'       => 'Product Items that populate in select dropdown',
+        'type'              => 'text',
+        'size'              => 'big',
+        'not null'          => TRUE,
+      ),
+      'DesignHardware'       => array(
+        'description'       => 'Design Hardware',
+        'type'              => 'text',
+        'size'              => 'big',
+        'not null'          => TRUE,
+      ),
+	  'DesignImg'       => array(
+        'description'       => 'Img of Product',
+        'type'              => 'varchar',
+        'length'            => '500',
+        'not null'          => TRUE,
+      ),
+	  'DesignSeries'       => array(
+        'description'       => 'Design Hardware Series / Model',
+        'type'              => 'text',
+        'size'              => 'big',
+        'not null'          => TRUE,
+      ),
+	  'DesignCombo'       => array(
+        'description'       => 'Design Grade of product and series',
+        'type'              => 'text',
+        'size'              => 'big',
+        'not null'          => TRUE,
+      ),
+	  'DesignURL'       => array(
+        'description'       => 'Url to spec sheet',
+        'type'              => 'text',
+        'size'              => 'big',
+        'not null'          => TRUE,
+      ),
+	  'Notes'       => array(
+        'description'       => 'Design Hardware',
+        'type'              => 'varchar',
+        'length'            => 500,
+        'not null'          => TRUE,
+      )
+	 ),
+    'primary key' => array('id'),
+    );  
+  return $schema;
+}

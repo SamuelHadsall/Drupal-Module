@@ -1,0 +1,300 @@
+<?php
+function product_comparison_help($path, $arg) {
+  switch ($path) {
+    case "admin/help#product_comparison":
+      return '<p>' . t("Displays links to nodes created on this date") . '</p>';
+      break;
+  }
+} 
+
+function product_comparison_entity_info(){
+  $entities = array();
+  $entities['product_comparison'] = array(
+    'label'  => t('Product Comparison'),
+    /*  The entity class and controller class extend the classes provided by the */
+    /*  Entity API */
+    'entity class' => 'Entity',
+    'controller class' => 'EntityAPIController',
+    // This Views controler will eneble us to create views base on this entity
+    'views controller class' => 'EntityDefaultViewsController',
+    'base table' => 'product_comparison',
+    'fieldable' => FALSE,
+    'entity keys' => array(
+        'id' => 'id',
+        'label' => 'Product ID',
+    ),
+    // Bundles are defined by the model types below
+    'bundles' => array(),
+    'label callback' => 'product_comparison_get_product_label', //The wording is calculated by a function
+    'uri callback' => 'product_comparison_uri',
+    'access callback' => 'access content',
+    'module' => 'product_comparison',
+  );
+  return $entities;
+}
+function product_comparison_get_product_label($entity_type, $entity){
+	// You can put some logic here to calculate the entity label
+	return $entity_type->DropdownCategory;
+}
+
+function product_comparison_menu(){
+	  $items = array();
+	  $items['design_product_comparison'] = array(
+	    'title'            => t('Product Comparison'),
+		'menu_name' => 'menu-main-menu',
+	    'page callback'    => 'drupal_get_form',
+	    'access arguments' => array('access content'),
+		'page arguments' => array('product_comparison_form'),
+	  );
+ 
+	  return $items;
+	}
+	
+	/*
+	* Display output
+	*/
+	function product_comparison_form($form, &$form_state) {
+	  
+	  //Query DB for Locks and Deadbolt Rows
+    $query = db_select('product_comparison');
+    $query->fields('product_comparison', array('id', 'OtherCombo',));
+	$query->condition('DropdownCategory', 'Locks and Deadbolts');
+	$query->orderBy('OtherCombo', 'ASC');
+    $results = $query->execute();
+	
+		//define rows
+	$options = array();
+	foreach ($results as $result) {
+		$options[$result->id] = $result->OtherCombo;
+	}
+	
+		$form['results'] = array(
+		'#type' => 'markup',
+		'#prefix' => '<div id="product_comparison_ajax_wrapper">',
+		'#suffix' => '</div>',
+		'#theme' => 'table',
+		'#header' => array(t('MFG'), t('Design Hardware'), t('Product Image'), t('URL')),
+		'#rows' => array(),
+		'#markup' => '<p>The results will appear here when you change the dropdown option.</p>',
+	  );
+
+  	      $form['Locks'] = array(
+        '#type' => 'select',
+        '#title' => t('Locks and Deadbolts'),
+		'#empty_option' => t('- Select -'),
+		'#options' => $options, 
+		'#ajax' => array(
+	      'event' => 'change',
+		  'wrapper' => 'product_comparison_ajax_wrapper',
+          'callback' => 'product_comparison_form_ajax'
+		),    
+    );
+	
+  
+
+
+	
+  // If the form has been submitted, build up your results and display them
+  if (isset($form_state['values']['Locks'])) {
+	  
+    $row = db_select('product_comparison');
+     $row->fields('product_comparison', array('OtherCombo', 'DesignCombo','DesignImg','DesignURL','Notes'));
+	 $row->condition('id', $form_state['values']['Locks']);
+	   $result = $row->execute();
+		
+		while($row = $result->fetchAssoc()) {
+			
+			$debug .= '<br/>Header Record #'.' <pre>' . print_r($row, true) . '</pre>';
+			$OtherCombo = array(
+                     '#type' => 'markup',
+                    '#markup' => '<b>' . $row['OtherCombo'] . '</b>',
+                 );
+			 $DesignCombo = array(
+                 '#type' => 'markup',
+                 '#markup' => '<b>' . $row['DesignCombo']. '</b>',
+                 );
+			 $DesignImg = array(
+			 	'#type' => 'markup',
+				'#markup' => '<img src="' . $row['DesignImg'] . '" />',
+				);
+				$DesignURL = array(
+			 	'#type' => 'markup',
+				'#markup' => '<a href="' . $row['DesignURL'] . '" target="_blank">' . $row['DesignURL'] . '</a>',
+				);
+				 $form['results'][] = array(
+				 	'OtherCombo' => &$OtherCombo,
+					'DesignCombo' => &$DesignCombo,
+					'DesignImg' => &$DesignImg,
+					'DesignURL' => &$DesignURL,
+				);
+			    $form['results']['#rows'][] = array(
+					array('data' => &$OtherCombo),
+				    array('data' => &$DesignCombo),
+					array('data' => &$DesignImg),
+					array('data' => &$DesignURL),
+                );
+										 
+				unset($OtherCombo);
+				unset($DesignCombo);
+				unset($DesignImg);
+				unset($DesignURL);
+		}
+   
+  }
+  
+    //Query DB for Exit Device Rows
+    $query = db_select('product_comparison');
+    $query->fields('product_comparison', array('id', 'OtherCombo',));
+	$query->condition('DropdownCategory', 'Exit Devices');
+	$query->orderBy('OtherCombo', 'ASC');
+    $results = $query->execute();
+	
+		//define rows
+	$options = array();
+	foreach ($results as $result) {
+		$options[$result->id] = $result->OtherCombo;
+	}
+
+  		$form['ExitDevices'] = array(
+        '#type' => 'select',
+        '#title' => t('Exit Devices'),
+		'#empty_option' => t('- Select -'),
+        '#options' => $options, 
+		'#ajax' => array(
+		   'event' => 'change',
+		  'wrapper' => 'product_comparison_ajax_wrapper',
+          'callback' => 'product_comparison_form_ajax'
+		),    
+    );
+	
+	  // If the form has been submitted, build up your results and display them
+  if (isset($form_state['values']['ExitDevices'])) {
+
+    $row = db_select('product_comparison');
+     $row->fields('product_comparison', array('OtherCombo', 'DesignCombo','DesignImg','DesignURL','Notes'));
+	 $row->condition('id', $form_state['values']['ExitDevices']);
+	   $result = $row->execute();
+		
+		while($row = $result->fetchAssoc()) {
+			
+			//$debug .= '<br/>Header Record #'.' <pre>' . print_r($row, true) . '</pre>';
+			$OtherCombo = array(
+                     '#type' => 'markup',
+                    '#markup' => '<b>' . $row['OtherCombo'] . '</b>',
+                 );
+			 $DesignCombo = array(
+                 '#type' => 'markup',
+                 '#markup' => '<b>' . $row['DesignCombo']. '</b>',
+                 );
+			 $DesignImg = array(
+			 	'#type' => 'markup',
+				'#markup' => '<img src="' . $row['DesignImg'] . '" />',
+				);
+				$DesignURL = array(
+			 	'#type' => 'markup',
+				'#markup' => '<a href="' . $row['DesignURL'] . '" target="_blank">' . $row['DesignURL'] . '</a>',
+				);
+				 $form['results'][] = array(
+				 	'OtherCombo' => &$OtherCombo,
+					'DesignCombo' => &$DesignCombo,
+					'DesignImg' => &$DesignImg,
+					'DesignURL' => &$DesignURL,
+				);
+			    $form['results']['#rows'][] = array(
+					array('data' => &$OtherCombo),
+				    array('data' => &$DesignCombo),
+					array('data' => &$DesignImg),
+					array('data' => &$DesignURL),
+                );
+										 
+				unset($OtherCombo);
+				unset($DesignCombo);
+				unset($DesignImg);
+				unset($DesignURL);
+		}
+   
+  }
+
+	    //Query DB for Exit Device Rows
+    $query = db_select('product_comparison');
+    $query->fields('product_comparison', array('id', 'OtherCombo',));
+	$query->condition('DropdownCategory', 'Door Closers');
+	$query->orderBy('OtherCombo', 'ASC');
+    $results = $query->execute();
+	
+		//define rows
+	$options = array();
+	foreach ($results as $result) {
+		$options[$result->id] = $result->OtherCombo;
+	}
+
+	$form['Closers'] = array(
+        '#type' => 'select',
+        '#title' => t('Door Closers'),
+		'#empty_option' => t('- Select -'),
+        '#options' => $options, 
+		'#ajax' => array(
+		   'event' => 'change',
+		  'wrapper' => 'product_comparison_ajax_wrapper',
+          'callback' => 'product_comparison_form_ajax'
+		),    
+    );
+	
+		  // If the form has been submitted, build up your results and display them
+  if (isset($form_state['values']['Closers'])) {
+
+    $row = db_select('product_comparison');
+     $row->fields('product_comparison', array('OtherCombo', 'DesignCombo','DesignImg','DesignURL','Notes'));
+	 $row->condition('id', $form_state['values']['Closers']);
+	   $result = $row->execute();
+		
+		while($row = $result->fetchAssoc()) {
+			
+			//$debug .= '<br/>Header Record #'.' <pre>' . print_r($row, true) . '</pre>';
+			$OtherCombo = array(
+                     '#type' => 'markup',
+                    '#markup' => '<b>' . $row['OtherCombo'] . '</b>',
+                 );
+			 $DesignCombo = array(
+                 '#type' => 'markup',
+                 '#markup' => '<b>' . $row['DesignCombo']. '</b>',
+                 );
+			 $DesignImg = array(
+			 	'#type' => 'markup',
+				'#markup' => '<img src="' . $row['DesignImg'] . '" />',
+				);
+				$DesignURL = array(
+			 	'#type' => 'markup',
+				'#markup' => '<a href="' . $row['DesignURL'] . '" target="_blank">' . $row['DesignURL'] . '</a>',
+				);
+				 $form['results'][] = array(
+				 	'OtherCombo' => &$OtherCombo,
+					'DesignCombo' => &$DesignCombo,
+					'DesignImg' => &$DesignImg,
+					'DesignURL' => &$DesignURL,
+				);
+			    $form['results']['#rows'][] = array(
+					array('data' => &$OtherCombo),
+				    array('data' => &$DesignCombo),
+					array('data' => &$DesignImg),
+					array('data' => &$DesignURL),
+                );
+										 
+				unset($OtherCombo);
+				unset($DesignCombo);
+				unset($DesignImg);
+				unset($DesignURL);
+		}
+   
+  }
+
+  
+  
+  	 return $form;
+	}
+	
+	function product_comparison_form_ajax($form, $form_state) {
+	  return $form['results'];
+	}
+	
+	

@@ -1,0 +1,5 @@
+name = Design Product Comparison
+description = Allows Users to Compare our products with other competitors.
+package = TMCobb Custom Blocks
+core = 7.x
+files[] = product_comparison.module
